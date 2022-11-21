@@ -112,7 +112,7 @@ def launch_setup(context, *args, **kwargs):
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
-        name="rviz2",
+        name="rviz_gazebo",
         output="log",
         arguments=["-d", rviz_config_file],
         condition=IfCondition(launch_rviz),
@@ -124,13 +124,15 @@ def launch_setup(context, *args, **kwargs):
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
+    # # Not usin this, because of bug with RegisterEventHandler, which doesn't care about the condition 'condition=IfCondition(launch_rviz),'
     # Delay rviz start after `joint_state_broadcaster`
-    delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[rviz_node],
-        )
-    )
+    # delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=joint_state_broadcaster_spawner,
+    #         on_exit=[rviz_node],
+
+    #     )
+    # )
 
     # There may be other controllers of the joints, but this is the initially-started one
     initial_joint_controller_spawner_started = Node(
@@ -165,11 +167,12 @@ def launch_setup(context, *args, **kwargs):
     nodes_to_start = [
         robot_state_publisher_node,
         joint_state_broadcaster_spawner,
-        delay_rviz_after_joint_state_broadcaster_spawner,
+        # delay_rviz_after_joint_state_broadcaster_spawner,
         initial_joint_controller_spawner_stopped,
         initial_joint_controller_spawner_started,
         gazebo,
         gazebo_spawn_robot,
+        rviz_node
     ]
 
     return nodes_to_start
